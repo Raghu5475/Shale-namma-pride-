@@ -1,0 +1,111 @@
+package com.shalenammapride.app.ui.auth
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.School
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
+import com.shalenammapride.app.data.model.AppLanguage
+import com.shalenammapride.app.data.model.UserRole
+import com.shalenammapride.app.ui.components.EnumDropdown
+import com.shalenammapride.app.ui.components.LoadingOrError
+import com.shalenammapride.app.ui.theme.text
+import com.shalenammapride.app.viewmodel.AppState
+
+@Composable
+fun SplashScreen(onContinue: () -> Unit) {
+    Column(
+        Modifier.fillMaxSize().padding(28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(Icons.Default.School, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Text("Shale-Namma Pride", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        Text("ಶಾಲೆ ನಮ್ಮ ಹೆಮ್ಮೆ", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.secondary)
+        Button(onClick = onContinue, modifier = Modifier.padding(top = 24.dp)) { Text("Start") }
+    }
+}
+
+@Composable
+fun LoginScreen(state: AppState, onLogin: (String, String) -> Unit, onSignup: () -> Unit) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    AuthShell(title = text("Welcome back", "ಮತ್ತೆ ಸ್ವಾಗತ")) {
+        OutlinedTextField(email, { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(password, { password = it }, label = { Text(text("Password", "ಪಾಸ್ವರ್ಡ್")) }, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
+        Button(onClick = { onLogin(email, password) }, modifier = Modifier.fillMaxWidth()) { Text(text("Login", "ಲಾಗಿನ್")) }
+        OutlinedButton(onClick = onSignup, modifier = Modifier.fillMaxWidth()) { Text(text("Create account", "ಖಾತೆ ರಚಿಸಿ")) }
+        LoadingOrError(state.loading, state.error)
+    }
+}
+
+@Composable
+fun SignupScreen(state: AppState, onSignup: (String, String) -> Unit, onLogin: () -> Unit) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    AuthShell(title = text("Create account", "ಖಾತೆ ರಚಿಸಿ")) {
+        OutlinedTextField(email, { email = it }, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(password, { password = it }, label = { Text(text("Password", "ಪಾಸ್ವರ್ಡ್")) }, visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())
+        Button(onClick = { onSignup(email, password) }, modifier = Modifier.fillMaxWidth()) { Text(text("Sign up", "ಸೈನ್ ಅಪ್")) }
+        OutlinedButton(onClick = onLogin, modifier = Modifier.fillMaxWidth()) { Text(text("Already have an account", "ಈಗಾಗಲೇ ಖಾತೆ ಇದೆ")) }
+        LoadingOrError(state.loading, state.error)
+    }
+}
+
+@Composable
+fun ProfileSetupScreen(state: AppState, email: String, onSave: (String, String, UserRole, String, AppLanguage) -> Unit) {
+    var name by remember { mutableStateOf("") }
+    var school by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf(UserRole.PARENT) }
+    var language by remember { mutableStateOf(AppLanguage.ENGLISH) }
+    AuthShell(title = text("Profile setup", "ಪ್ರೊಫೈಲ್ ಸಿದ್ಧತೆ")) {
+        OutlinedTextField(name, { name = it }, label = { Text(text("Name", "ಹೆಸರು")) }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(school, { school = it }, label = { Text(text("School name", "ಶಾಲೆಯ ಹೆಸರು")) }, modifier = Modifier.fillMaxWidth())
+        EnumDropdown(text("Role", "ಪಾತ್ರ"), UserRole.entries.toTypedArray(), role) { role = it }
+        EnumDropdown(text("Preferred language", "ಭಾಷೆ"), AppLanguage.entries.toTypedArray(), language) { language = it }
+        Button(onClick = { onSave(name, email, role, school, language) }, modifier = Modifier.fillMaxWidth()) {
+            Text(text("Save profile", "ಪ್ರೊಫೈಲ್ ಉಳಿಸಿ"))
+        }
+        LoadingOrError(state.loading, state.error)
+    }
+}
+
+@Composable
+private fun AuthShell(title: String, content: @Composable ColumnScope.() -> Unit) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(Icons.Default.School, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text("Shale-Namma Pride", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text(title, style = MaterialTheme.typography.titleLarge)
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
+            }
+        }
+    }
+}
